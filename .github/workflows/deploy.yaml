@@ -140,25 +140,52 @@ jobs:
         - name: Setup Helm
           uses: azure/setup-helm@v3
           with:
-            version: 'v3.13.3'
+            version: 'v3.14.0'
 
         - name: Setup Kubectl
           uses: azure/setup-kubectl@v3
           with:
             version: 'latest'
 
-        - name: Config kubectl
+        - name: Configure kubeconfig
           run: |
             mkdir -p ~/.kube
-            echo "$KUBE_CONFIG" > ~/.kube/config
+            echo "$KUBE_CONFIG" | base64 -d > ~/.kube/config
             chmod 600 ~/.kube/config
+          env:
+            KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
 
         - name: Add Helm repository (Nexus)
           run: |
             helm repo add nexus "${{ env.NEXUS_HELM_REPO }}" \
-              --username "${{ env.NEXUS_HELM_REPO_USER }}" \
-              --password "${{ env.NEXUS_HELM_REPO_PASSWORD }}"
+              --username="${{ env.NEXUS_HELM_REPO_USER }}" \
+              --password="${{ env.NEXUS_HELM_REPO_PASSWORD }}"
             helm repo update
+
+        - name: Upgrade or Install Helm release
+          run: |
+            helm upgrade --install sausage-store nexus/sausage-store \
+              --namespace "${{ env.SAUSAGE_STORE_NAMESPACE }}" \
+              --create-namespace \
+              --set backend.livenessProbe.path=/actuator/health \
+              --set backend.livenessProbe.port=8080 \
+              --set backend.vpa.enabled=true \
+              --set backend-report.hpa.enabled=true \
+              --set global.vault.vaultToken="${{ env.VAULT_TOKEN }}" \
+              --set global.vault.name=vault-secrets \
+              --set global.vault.host=vault.example.com \
+              --wait \
+              --timeout 5m0s
+
+        - name: Check rollout status of deployments
+          run: |
+            kubectl -n "${{ env.SAUSAGE_STORE_NAMESPACE }}" rollout status deployment/sausage-store-backend --timeout=5m
+            kubectl -n "${{ env.SAUSAGE_STORE_NAMESPACE }}" rollout status deployment/sausage-store-backend-report --timeout=5m
+            kubectl -n "${{ env.SAUSAGE_STORE_NAMESPACE }}" rollout status deployment/sausage-store-frontend --timeout=5m
+
+        - name: Verify deployment status
+          run: |
+            kubectl -n "${{ env.SAUSAGE_STORE_NAMESPACE }}" get pods,svc,ingress
 
         # - name: Upgrade Helm release
         #   run: |
@@ -169,3 +196,4 @@ jobs:
         #       --set global.vault.name="vault-secrets" \
         #       --set global.vault.host="vault.example.com" \
         #       --wait
+
