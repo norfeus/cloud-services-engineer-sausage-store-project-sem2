@@ -110,6 +110,8 @@ infra:
       PGSQL_PASSWORD: pgpassword
       PGSQL_DB: sausage-store
     containerPort: 5432  
+    persistence:
+      size: 5Gi
   ### Опишите необходимые переменные для развертывания PostgresQL в кластере Kubernetes
   mongodb:
     env:
