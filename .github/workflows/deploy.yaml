@@ -76,7 +76,7 @@ jobs:
         - name: Setup Helm
           uses: azure/setup-helm@v3
           with:
-            version: 'v3.13.x'
+            version: 'v3.13.3'
 
         - name: Add Helm repository (Nexus)
           run: |
@@ -112,7 +112,7 @@ jobs:
         - name: Setup Helm
           uses: azure/setup-helm@v3
           with:
-            version: 'v3.13.x'
+            version: 'v3.13.3'
 
         - name: Setup Kubectl
           uses: azure/setup-kubectl@v3
