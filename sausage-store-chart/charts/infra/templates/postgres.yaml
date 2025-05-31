@@ -1,4 +1,4 @@
-{{- if .Values.infra.postgresql.enabled }}
+{{- if .Values.postgresql.enabled }}
 {{- $fullName := printf "postgresql" -}}
 
 # -----------------------------------
