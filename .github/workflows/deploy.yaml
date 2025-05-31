@@ -78,6 +78,12 @@ jobs:
           with:
             version: 'v3.13.3'
 
+        - name: Package Helm chart
+          run: |
+            cd sausage-store-chart
+            helm package . --version 0.1.0
+            cd ..
+
         - name: Add Helm repository (Nexus)
           run: |
             helm repo add nexus "$NEXUS_HELM_REPO" \
@@ -85,16 +91,9 @@ jobs:
               --password "$NEXUS_HELM_REPO_PASSWORD"
             helm repo update
 
-        - name: Package Helm chart
-          run: |
-            cd sausage-store-chart
-            helm package . --version 0.1.0
-
         - name: Push Helm chart to Nexus
           run: |
-            curl -u "$NEXUS_HELM_REPO_USER:$NEXUS_HELM_REPO_PASSWORD" \
-              --data-binary "@sausage-store-0.1.0.tgz" \
-              "$NEXUS_HELM_REPO"
+            helm push sausage-store-*.tgz nexus
 
 
       #### Опишите необходимые шаги
