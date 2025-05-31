@@ -54,7 +54,7 @@ metadata:
     app.kubernetes.io/part-of: sausage-store
 spec:
   serviceName: {{ $fullName }}
-  replicas: {{ .Values.infra.postgresql.replicas }}
+  replicas: 1
   selector:
     matchLabels:
       app: {{ $fullName }}
@@ -65,18 +65,17 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: "{{ .Values.infra.postgresql.image }}:{{ .Values.infra.postgresql.tag }}"
-          imagePullPolicy: {{ .Values.infra.postgresql.imagePullPolicy }}
+          image: postgres:15
           ports:
-            - containerPort: {{ .Values.infra.postgresql.containerPort }}
+            - containerPort: {{ .Values.postgres.containerPort }}
               name: postgres
           env:
             - name: POSTGRES_USER
-              value: "{{ .Values.infra.postgresql.env.PGSQL_USERNAME }}"
+              value: "{{ .Values.postgresql.env.PGSQL_USERNAME }}"
             - name: POSTGRES_PASSWORD
-              value: "{{ .Values.infra.postgresql.env.PGSQL_PASSWORD }}"
+              value: "{{ .Values.postgresql.env.PGSQL_PASSWORD }}"
             - name: POSTGRES_DB
-              value: "{{ .Values.infra.postgresql.env.PGSQL_DB }}"
+              value: "{{ .Values..postgresql.env.PGSQL_DB }}"
           volumeMounts:
             - name: data
               mountPath: /var/lib/postgresql/data
@@ -110,8 +109,8 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   ports:
-    - port: {{ .Values.infra.postgresql.containerPort }}
-      targetPort: {{ .Values.infra.postgresql.containerPort }}
+    - port: {{ .Values.postgresql.containerPort }}
+      targetPort: {{ .Values.postgresql.containerPort }}
       protocol: TCP
   clusterIP: None
   selector:
@@ -128,8 +127,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   ports:
-    - port: {{ .Values.infra.postgresql.containerPort }}
-      targetPort: {{ .Values.infra.postgresql.containerPort }}
+    - port: {{ .Values.postgresql.containerPort }}
+      targetPort: {{ .Values.postgresql.containerPort }}
       protocol: TCP
   selector:
     app: {{ $fullName }}
