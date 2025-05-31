@@ -70,6 +70,33 @@ jobs:
       needs: build_and_push_to_docker_hub
 
       steps:
+        - name: Checkout repository
+          uses: actions/checkout@v3
+
+        - name: Setup Helm
+          uses: azure/setup-helm@v3
+          with:
+            version: 'v3.13.x'
+
+        - name: Add Helm repository (Nexus)
+          run: |
+            helm repo add nexus "$NEXUS_HELM_REPO" \
+              --username "$NEXUS_HELM_REPO_USER" \
+              --password "$NEXUS_HELM_REPO_PASSWORD"
+            helm repo update
+
+        - name: Package Helm chart
+          run: |
+            cd sausage-store-chart
+            helm package . --version 0.1.0
+
+        - name: Push Helm chart to Nexus
+          run: |
+            curl -u "$NEXUS_HELM_REPO_USER:$NEXUS_HELM_REPO_PASSWORD" \
+              --data-binary "@sausage-store-0.1.0.tgz" \
+              "$NEXUS_HELM_REPO"
+
+
       #### Опишите необходимые шаги
 
   # Деплоим приложения в кластер Kubernetes с помощью helm-чарт
@@ -79,4 +106,38 @@ jobs:
       needs: add_helm_chart_to_nexus
 
       steps:
-      #### Опишите необходимые шаги
+        - name: Checkout repository
+          uses: actions/checkout@v3
+
+        - name: Setup Helm
+          uses: azure/setup-helm@v3
+          with:
+            version: 'v3.13.x'
+
+        - name: Setup Kubectl
+          uses: azure/setup-kubectl@v3
+          with:
+            version: 'latest'
+
+        - name: Config kubectl
+          run: |
+            mkdir -p ~/.kube
+            echo "$KUBE_CONFIG" > ~/.kube/config
+            chmod 600 ~/.kube/config
+
+        - name: Add Helm repository (Nexus)
+          run: |
+            helm repo add nexus "$NEXUS_HELM_REPO" \
+              --username "$NEXUS_HELM_REPO_USER" \
+              --password "$NEXUS_HELM_REPO_PASSWORD"
+            helm repo update
+
+        # - name: Upgrade Helm release
+        #   run: |
+        #     helm upgrade --install sausage-store nexus/sausage-store \
+        #       --namespace "$SAUSAGE_STORE_NAMESPACE" \
+        #       --create-namespace \
+        #       --set global.vault.vaultToken="$VAULT_TOKEN" \
+        #       --set global.vault.name="vault-secrets" \
+        #       --set global.vault.host="vault.example.com" \
+        #       --wait
