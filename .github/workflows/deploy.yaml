@@ -105,8 +105,6 @@ jobs:
 
         - name: Push Helm chart to Nexus
           run: |
-        #    helm push sausage-store-*.tgz nexus
-        #    helm cm-push --context-path=/helm/v1 mychart-0.3.2.tgz chartmuseum
             helm cm-push sausage-store-*.tgz ${{ env.NEXUS_HELM_REPO }}
 
 
