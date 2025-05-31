@@ -71,12 +71,12 @@ jobs:
 
       steps:
         - name: Checkout repository
-          uses: actions/checkout@v3
+          uses: actions/checkout@v4
 
         - name: Setup Helm
-          uses: azure/setup-helm@v1
+          uses: azure/setup-helm@v4
           with:
-            version: 'v3.14'
+            version: 'v4.3.0'
 
         - name: Install helm-push plugin
           run: |
