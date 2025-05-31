@@ -77,7 +77,7 @@ jobs:
           uses: azure/setup-helm@v3
           with:
             version: 'v3.13.3'
-            
+
         - name: Install helm-push plugin
           run: |
             helm plugin uninstall push || true
@@ -89,12 +89,19 @@ jobs:
             helm package . --version 0.1.0
             cd ..
 
-        - name: Add Helm repository (Nexus)
+        - name: Configure Helm Repository
           run: |
-            helm repo add nexus "${{ env.NEXUS_HELM_REPO }}" \
-              --username "${{ env.NEXUS_HELM_REPO_USER }}" \
-              --password "${{ env.NEXUS_HELM_REPO_PASSWORD }}"
+            helm repo add chartmuseum "${{ env.NEXUS_HELM_REPO }}" \
+              --username="${{ env.NEXUS_HELM_REPO_USER }}" \
+              --password="${{ env.NEXUS_HELM_REPO_PASSWORD }}"
             helm repo update
+
+        # - name: Add Helm repository (Nexus)
+        #   run: |
+        #     helm repo add nexus "${{ env.NEXUS_HELM_REPO }}" \
+        #       --username "${{ env.NEXUS_HELM_REPO_USER }}" \
+        #       --password "${{ env.NEXUS_HELM_REPO_PASSWORD }}"
+        #     helm repo update
 
         - name: Push Helm chart to Nexus
           run: |
