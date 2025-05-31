@@ -1,70 +1,136 @@
-{{- if eq .Values.infra.postgresql.enabled true }}
+{{- if .Values.infra.postgresql.enabled }}
+{{- $fullName := printf "postgresql" -}}
+
+# -----------------------------------
+# ConfigMap (для настроек PostgreSQL)
+# -----------------------------------
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $fullName }}-config
+  namespace: {{ .Release.Namespace }}
+data:
+  postgresql.conf: |
+    max_connections = 100
+    shared_buffers = 2GB
+    work_mem = 10MB
+  pg_hba.conf: |
+    # Allow local connections
+    local   all             all                                     trust
+    host    all             all             127.0.0.1/32            trust
+    host    all             all             ::1/128                 trust
+    host    all             all             0.0.0.0/0               md5
+
+# -----------------------------------
+# PersistentVolumeClaim
+# -----------------------------------
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: postgres-pvc
+  name: {{ $fullName }}-pvc
   namespace: {{ .Release.Namespace }}
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi
+      storage: {{ .Values.infra.postgresql.persistence.size | quote }}
+
+# -----------------------------------
+# StatefulSet
+# -----------------------------------
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: postgresql
+  name: {{ $fullName }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/name: {{ $fullName }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: database
     app.kubernetes.io/part-of: sausage-store
 spec:
-  replicas: 1
+  serviceName: {{ $fullName }}
+  replicas: {{ .Values.infra.postgresql.replicas }}
   selector:
     matchLabels:
-      app: postgresql
+      app: {{ $fullName }}
   template:
     metadata:
       labels:
-        app: postgresql
+        app: {{ $fullName }}
     spec:
       containers:
         - name: postgres
-          image: postgres:14
-          imagePullPolicy: {{ .Values.infra.postgresql.imagePullPolicy | default "IfNotPresent" }}
+          image: "{{ .Values.infra.postgresql.image }}:{{ .Values.infra.postgresql.tag }}"
+          imagePullPolicy: {{ .Values.infra.postgresql.imagePullPolicy }}
           ports:
-            - containerPort: {{ .Values.infra.postgresql.containerPort | int }}
+            - containerPort: {{ .Values.infra.postgresql.containerPort }}
+              name: postgres
           env:
             - name: POSTGRES_USER
-              value: {{ .Values.infra.postgresql.env.PGSQL_USERNAME }}
+              value: "{{ .Values.infra.postgresql.env.PGSQL_USERNAME }}"
             - name: POSTGRES_PASSWORD
-              value: {{ .Values.infra.postgresql.env.PGSQL_PASSWORD }}
+              value: "{{ .Values.infra.postgresql.env.PGSQL_PASSWORD }}"
             - name: POSTGRES_DB
-              value: {{ .Values.infra.postgresql.env.PGSQL_DB }}
+              value: "{{ .Values.infra.postgresql.env.PGSQL_DB }}"
           volumeMounts:
-            - name: postgres-storage
+            - name: data
               mountPath: /var/lib/postgresql/data
+            - name: config
+              mountPath: /etc/postgresql
+              subPath: postgresql.conf
+            - name: config
+              mountPath: /etc/postgresql/pg_hba.conf
+              subPath: pg_hba.conf
       volumes:
-        - name: postgres-storage
-          persistentVolumeClaim:
-            claimName: postgres-pvc
+        - name: config
+          configMap:
+            name: {{ $fullName }}-config
+            items:
+              - key: postgresql.conf
+                path: postgresql.conf
+              - key: pg_hba.conf
+                path: pg_hba.conf
+
+# -----------------------------------
+# Headless Service (для StatefulSet)
+# -----------------------------------
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgresql
+  name: {{ $fullName }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/name: {{ $fullName }}
     app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   ports:
     - port: {{ .Values.infra.postgresql.containerPort }}
-      protocol: TCP
       targetPort: {{ .Values.infra.postgresql.containerPort }}
+      protocol: TCP
+  clusterIP: None
   selector:
-    app: postgresql
+    app: {{ $fullName }}
+
+# -----------------------------------
+# Обычный Service (для подключения из других микросервисов)
+# -----------------------------------
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullName }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  ports:
+    - port: {{ .Values.infra.postgresql.containerPort }}
+      targetPort: {{ .Values.infra.postgresql.containerPort }}
+      protocol: TCP
+  selector:
+    app: {{ $fullName }}
 {{- end }}

@@ -104,6 +104,7 @@ backend-report:
 
 infra:
   postgresql:
+    enabled: true
     env:
       PGSQL_USERNAME: pgusername
       PGSQL_PASSWORD: pgpassword
