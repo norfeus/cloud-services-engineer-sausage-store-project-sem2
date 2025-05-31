@@ -36,7 +36,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.infra.postgresql.persistence.size | quote }}
+      storage: {{ .Values.postgresql.persistence.size | quote }}
 
 # -----------------------------------
 # StatefulSet
