@@ -77,6 +77,11 @@ jobs:
           uses: azure/setup-helm@v3
           with:
             version: 'v3.13.3'
+            
+        - name: Install helm-push plugin
+          run: |
+            helm plugin uninstall push || true
+            helm plugin install https://github.com/chartmuseum/helm-push.git
 
         - name: Package Helm chart
           run: |
