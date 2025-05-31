@@ -120,7 +120,7 @@ jobs:
             helm dependency update ./sausage-store-chart
             mkdir -p ./packaged-chart
             helm package ./sausage-store-chart -d ./packaged-chart
-            helm cm-push ./packaged-chart/sausage-store-*.tgz "${{ env.NEXUS_HELM_REPO }}" \
+            helm cm-push -f ./packaged-chart/sausage-store-*.tgz "${{ env.NEXUS_HELM_REPO }}" \
               --context-path="/repository/nagaitsev-helm-sem2" \
               --username="${{ env.NEXUS_HELM_REPO_USER }}" \
               --password="${{ env.NEXUS_HELM_REPO_PASSWORD }}"
