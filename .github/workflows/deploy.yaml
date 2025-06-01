@@ -166,15 +166,11 @@ jobs:
           run: |
             helm upgrade --install sausage-store nexus/sausage-store \
               --namespace "${{ env.SAUSAGE_STORE_NAMESPACE }}" \
-              --set backend.livenessProbe.path=/actuator/health \
-              --set backend.livenessProbe.port=8080 \
-              --set backend.vpa.enabled=true \
-              --set backend-report.hpa.enabled=true \
               --set global.vault.vaultToken="${{ env.VAULT_TOKEN }}" \
               --set global.vault.name=vault-secrets \
               --set global.vault.host=vault.example.com \
               --wait \
-              --timeout 5m0s
+              --timeout 2m0s
 
         - name: Check rollout status of deployments
           run: |
