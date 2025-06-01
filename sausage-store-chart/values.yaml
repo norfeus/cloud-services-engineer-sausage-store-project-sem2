@@ -73,12 +73,23 @@ backend:
       memory: "700Mi"
       cpu: "1"
 
-backend-report:
+
+backendReport:
+  enabled: true
   replicas: 1
   strategy:
     type: Recreate
   image: YOUR_DOCKERHUB/sausage-backend-report:latest
-  imagePullPolicy: Always
+  tag: latest
+  containerPort: 8080
+  imagePullPolicy: IfNotPresent
+
+  configMap:
+    PORT: "8080"
+
+  secret:
+    DB_URI: mongodb://user:password@sausage-store-mongodb:27017/reports
+
   resources:
     requests:
       memory: "128Mi"
@@ -86,16 +97,13 @@ backend-report:
     limits:
       memory: "256Mi"
       cpu: "500m"
-  containerPort: 8080
-  configMap:
-    PORT: "8080"
-  secret:
-    DB: mongodb://sausage-store-mongodb:27017/reports
+
   hpa:
     enabled: true
     minReplicas: 1
     maxReplicas: 5
     targetCPUUtilizationPercentage: 75
+
 ### Опишите значения для backend-report
 ### Приложение должно использовать стратегию Recreate
 ### Приложение использует переменную PORT - порт, на котором оно запустится и DB - Uri-подключение к mongodb. 

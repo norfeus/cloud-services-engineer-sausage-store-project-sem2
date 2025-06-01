@@ -1,8 +1,7 @@
 ---
 apiVersion: v2
-type: application
 name: backend-report
-description: backend-report Helm Chart
+description: Go-based reporting service for Sausage Store
 
 version: 0.1.0
 appVersion: "latest"
