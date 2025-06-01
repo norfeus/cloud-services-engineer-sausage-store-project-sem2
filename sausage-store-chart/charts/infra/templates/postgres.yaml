@@ -115,21 +115,3 @@ spec:
   clusterIP: None
   selector:
     app: {{ $fullName }}
-
-# -----------------------------------
-# Обычный Service (для подключения из других микросервисов)
-# -----------------------------------
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ $fullName }}
-  namespace: {{ .Release.Namespace }}
-spec:
-  ports:
-    - port: {{ .Values.postgresql.containerPort }}
-      targetPort: {{ .Values.postgresql.containerPort }}
-      protocol: TCP
-  selector:
-    app: {{ $fullName }}
-{{- end }}
