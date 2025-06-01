@@ -1,0 +1,19 @@
+secret:
+  DB_URI: bW9uZ29kYjovL3Jvb3Q6cm9vdHBhc3N3b3JkQHNhdXNhZ2Utc3RvcmUtbW9uZ29kYjoyNzAxNy9yZXBvcnRzP2F1dGhTb3VyY2U9YWRtaW4=
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 75
+backendReport:
+  enabled: true
+  replicas: 1
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "500m"
+  configMap:
+    PORT: "8080"
