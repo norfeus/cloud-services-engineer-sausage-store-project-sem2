@@ -22,10 +22,11 @@ spec:
     spec:
       containers:
         - name: backend-report
-          image: "{{ .Values.backendReport.image }}:{{ .Values.backendReport.tag }}"
-          imagePullPolicy: {{ .Values.backendReport.imagePullPolicy }}
+          image: "{{ .Values.image }}:{{ .Values.tag }}"
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+
           ports:
-            - containerPort: {{ .Values.backendReport.containerPort }}
+            - containerPort: {{ .Values.containerPort }}
           envFrom:
             - configMapRef:
                 name: backend-report-config
@@ -33,9 +34,8 @@ spec:
                 name: backend-report-secrets
           resources:
             requests:
-              memory: {{ .Values.backendReport.resources.requests.memory }}
-              cpu: {{ .Values.backendReport.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+              cpu: {{ .Values.resources.requests.cpu }}
             limits:
-              memory: {{ .Values.backendReport.resources.limits.memory }}
-              cpu: {{ .Values.backendReport.resources.limits.cpu }}
-              
+              memory: {{ .Values.resources.limits.memory }}
+              cpu: {{ .Values.resources.limits.cpu }}

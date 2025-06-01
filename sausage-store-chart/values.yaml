@@ -76,7 +76,7 @@ backend:
       cpu: "1"
 
 
-backendReport:
+backend-report:
   enabled: true
   replicas: 1
   strategy:
@@ -90,7 +90,7 @@ backendReport:
     PORT: "8080"
 
   secret:
-    DB_URI: mongodb://user:password@sausage-store-mongodb:27017/reports
+    DB_URI: bW9uZ29kYjovL3Jvb3Q6cm9vdHBhc3N3b3JkQHNhdXNhZ2Utc3RvcmUtbW9uZ29kYjoyNzAxNy9yZXBvcnRzP2F1dGhTb3VyY2U9YWRtaW4=
 
   resources:
     requests:
