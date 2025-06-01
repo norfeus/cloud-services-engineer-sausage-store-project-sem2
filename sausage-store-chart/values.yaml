@@ -62,10 +62,13 @@ backend:
       maxSurge: 1
       maxUnavailable: 0
   livenessProbe:
-    path: /actuator/health
-    port: 8080
+    httpGet:
+      path: /actuator/health
+      port: 8080
     initialDelaySeconds: 30
-    periodSeconds: 10
+    periodSeconds: 60
+    failureThreshold: 3
+    timeoutSeconds: 5
   vpa:
     enabled: true
     minAllowed:
@@ -116,8 +119,8 @@ infra:
   postgresql:
     enabled: true
     env:
-      PGSQL_USERNAME: pgusername
-      PGSQL_PASSWORD: pgpassword
+      PGSQL_USERNAME: store
+      PGSQL_PASSWORD: storepassword
       PGSQL_DB: sausage-store
     containerPort: 5432  
     persistence:
