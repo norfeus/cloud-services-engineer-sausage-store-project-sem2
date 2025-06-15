@@ -34,9 +34,6 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  resources:
-    requests:
-      storage: {{ .Values.postgresql.persistence.size | quote }}
 
 # -----------------------------------
 # StatefulSet
@@ -85,6 +82,8 @@ spec:
             - name: config
               mountPath: /etc/postgresql/pg_hba.conf
               subPath: pg_hba.conf
+          resources:
+{{ toYaml .Values.postgresql.resources | indent 10 }}
       volumes:
         - name: config
           configMap:
