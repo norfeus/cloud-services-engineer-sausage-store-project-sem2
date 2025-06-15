@@ -167,8 +167,8 @@ jobs:
             kubectl config get-contexts
             helm repo update
             echo "Listing available charts in repository..."
-            helm search repo chartmuseum
-            helm upgrade --install sausage-store chartmuseum/sausage-store \
+            helm search repo nagaitsev-helm-sem2
+            helm upgrade --install sausage-store nagaitsev-helm-sem2/sausage-store \
               --namespace ${{ secrets.SAUSAGE_STORE_NAMESPACE }} \
               --set frontend.fqdn=front-${{ secrets.STUDENT_NAME }}.2sem.students-projects.ru \
               --set frontend.image.repository=${{ env.DOCKER_USERNAME }}/sausage-store/sausage-frontend \
