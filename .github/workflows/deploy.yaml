@@ -153,6 +153,13 @@ jobs:
           chmod 600 ~/.kube/config
         shell: bash
 
+      - name: Cleanup old Helm ConfigMaps
+        run: |
+          kubectl -n $SAUSAGE_STORE_NAMESPACE get configmaps | \
+          grep 'sh.helm.release.v1' | \
+          sort | head -n -5 | awk '{print $1}' | \
+          xargs --no-run-if-empty kubectl delete configmap -n $SAUSAGE_STORE_NAMESPACE
+
       - name: Deploy Helm chart
         env:
           HELM_DRIVER: configmap
