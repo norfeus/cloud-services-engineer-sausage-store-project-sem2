@@ -116,20 +116,23 @@ backend-report:
 
 infra:
   postgresql:
-    env:
-      PGSQL_USERNAME: store
-      PGSQL_PASSWORD: storepassword
-      PGSQL_DB: sausage-store
-    containerPort: 5432  
-    persistence:
-      size: "5Gi"
+    enabled: true
+    image: postgres:15
+    port: 5432
+    database: sausage-store
+    username: store
+    password: storepassword
     resources:
       requests:
-        cpu: 300m
-        memory: 250Mi
+        cpu: "100m"
+        memory: "128Mi"
       limits:
-        cpu: 500m
-        memory: 500Mi
+        cpu: "200m"
+        memory: "256Mi"
+    persistence:
+      enabled: true
+      storageClass: ""
+      size: 2Gi
     
 
   ### Опишите необходимые переменные для развертывания PostgresQL в кластере Kubernetes

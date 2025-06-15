@@ -1,120 +1,123 @@
-{{- $fullName := printf "postgresql" -}}
-
-# -----------------------------------
-# ConfigMap (для настроек PostgreSQL)
-# -----------------------------------
----
+{{- if .Values.postgresql.enabled }}
+# ConfigMap для PostgreSQL
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ $fullName }}-config
-  namespace: {{ .Release.Namespace }}
-data:
-  postgresql.conf: |
-    max_connections = 100
-    shared_buffers = 2GB
-    work_mem = 10MB
-  pg_hba.conf: |
-    # Allow local connections
-    local   all             all                                     trust
-    host    all             all             127.0.0.1/32            trust
-    host    all             all             ::1/128                 trust
-    host    all             all             0.0.0.0/0               md5
-
-# -----------------------------------
-# PersistentVolumeClaim
-# -----------------------------------
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ $fullName }}-pvc
-  namespace: {{ .Release.Namespace }}
-spec:
-  accessModes:
-    - ReadWriteOnce
-
-# -----------------------------------
-# StatefulSet
-# -----------------------------------
----
-apiVersion: apps/v1
-kind: StatefulSet
-metadata:
-  name: {{ $fullName }}
+  name: postgres-conf
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ $fullName }}
+    app.kubernetes.io/name: postgres
     app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     app.kubernetes.io/component: database
     app.kubernetes.io/part-of: sausage-store
-spec:
-  serviceName: {{ $fullName }}
-  replicas: 1
-  selector:
-    matchLabels:
-      app: {{ $fullName }}
-  template:
-    metadata:
-      labels:
-        app: {{ $fullName }}
-    spec:
-      containers:
-        - name: postgres
-          image: postgres:15
-          ports:
-            - containerPort: {{ .Values.postgresql.containerPort }}
-              name: postgres
-          env:
-            - name: POSTGRES_USER
-              value: "{{ .Values.postgresql.env.PGSQL_USERNAME }}"
-            - name: POSTGRES_PASSWORD
-              value: "{{ .Values.postgresql.env.PGSQL_PASSWORD }}"
-            - name: POSTGRES_DB
-              value: "{{ .Values.postgresql.env.PGSQL_DB }}"
-          volumeMounts:
-            - name: data
-              mountPath: /var/lib/postgresql/data
-            - name: config
-              mountPath: /etc/postgresql
-              subPath: postgresql.conf
-            - name: config
-              mountPath: /etc/postgresql/pg_hba.conf
-              subPath: pg_hba.conf
-          resources:
-            requests:
-              storage: {{ .Values.infra.postgresql.persistence.size | default "5Gi" | quote }}
-      volumes:
-        - name: config
-          configMap:
-            name: {{ $fullName }}-config
-            items:
-              - key: postgresql.conf
-                path: postgresql.conf
-              - key: pg_hba.conf
-                path: pg_hba.conf
-        - name: data
-          persistentVolumeClaim:
-            claimName: {{ $fullName }}-pvc
+    env: {{ .Values.environment | default "production" }}
+data:
+  POSTGRES_DB: {{ .Values.postgresql.database }}
+  POSTGRES_USER: {{ .Values.postgresql.username }}
+  POSTGRES_PASSWORD: {{ .Values.postgresql.password }}
 
-# -----------------------------------
-# Headless Service (для StatefulSet)
-# -----------------------------------
 ---
+# Service для PostgreSQL
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ $fullName }}
+  name: postgres-service
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: {{ $fullName }}
+    app.kubernetes.io/name: postgres
     app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: sausage-store
+    env: {{ .Values.environment | default "production" }}
 spec:
   ports:
-    - port: {{ .Values.postgresql.containerPort }}
-      targetPort: {{ .Values.postgresql.containerPort }}
-      protocol: TCP
-  clusterIP: None
+    - port: {{ .Values.postgresql.port }}
+      targetPort: {{ .Values.postgresql.port }}
   selector:
-    app: {{ $fullName }}
+    app: postgres
+  clusterIP: None
 
+---
+# StatefulSet для PostgreSQL
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    helm.sh/hook-weight: "-5"
+  labels:
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    app.kubernetes.io/component: database
+    app.kubernetes.io/part-of: sausage-store
+    env: {{ .Values.environment | default "production" }}
+spec:
+  serviceName: postgres-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+        app.kubernetes.io/name: postgres
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      initContainers:
+        - name: fix-permissions
+          image: busybox
+          command: ["sh", "-c", "chown -R 999:999 /var/lib/postgresql/data && rm -rf /var/lib/postgresql/data/lost+found"]
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+      containers:
+        - name: postgres
+          image: {{ .Values.postgresql.image }}
+          envFrom:
+            - configMapRef:
+                name: postgres-conf
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          ports:
+            - containerPort: {{ .Values.postgresql.port }}
+          resources:
+            requests:
+              cpu: {{ .Values.postgresql.resources.requests.cpu }}
+              memory: {{ .Values.postgresql.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.postgresql.resources.limits.cpu }}
+              memory: {{ .Values.postgresql.resources.limits.memory }}
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: {{ .Values.postgresql.persistence.size }}
+        {{- if .Values.postgresql.persistence.storageClass }}
+        storageClassName: {{ .Values.postgresql.persistence.storageClass }}
+        {{- end }}
+{{- end }}
