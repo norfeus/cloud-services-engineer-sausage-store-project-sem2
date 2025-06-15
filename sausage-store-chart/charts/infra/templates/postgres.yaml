@@ -1,3 +1,5 @@
+{{- $fullName := printf "postgresql" -}}
+
 # -----------------------------------
 # ConfigMap (для настроек PostgreSQL)
 # -----------------------------------
@@ -115,3 +117,4 @@ spec:
   clusterIP: None
   selector:
     app: {{ $fullName }}
+
