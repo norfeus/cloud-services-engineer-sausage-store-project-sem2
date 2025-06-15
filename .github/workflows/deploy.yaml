@@ -146,7 +146,8 @@ jobs:
         - name: Setup kubeconfig
           run: |
             mkdir -p ~/.kube
-            echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+            echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > ~/.kube/config
+            chmod 600 ~/.kube/config
           shell: bash
         - name: Deploy Helm chart
           run: |
