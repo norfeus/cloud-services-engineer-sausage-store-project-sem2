@@ -123,7 +123,7 @@ infra:
       PGSQL_DB: sausage-store
     containerPort: 5432  
     persistence:
-      size: 500Mi
+      size: "5Gi"
     resources:
       requests:
         cpu: 300m
@@ -140,7 +140,7 @@ infra:
       MONGO_INITDB_ROOT_PASSWORD: rootpassword
     containerPort: 27017
     persistence:
-      size: 500Mi
+      size: "5Gi"
     resources:
       requests:
         cpu: 50m
