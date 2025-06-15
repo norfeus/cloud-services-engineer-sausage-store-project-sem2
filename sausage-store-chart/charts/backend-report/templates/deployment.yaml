@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: backend-report
-          image: "{{ .Values.image }}:{{ .Values.tag }}"
+          image: {{ .Values.image }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
 
           ports:

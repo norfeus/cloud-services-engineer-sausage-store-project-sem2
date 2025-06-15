@@ -85,7 +85,6 @@ backend-report:
   strategy:
     type: Recreate
   image: norff/sausage-backend-report:latest
-  tag: latest
   containerPort: 8080
   imagePullPolicy: IfNotPresent
 
