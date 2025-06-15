@@ -123,14 +123,14 @@ infra:
       PGSQL_DB: sausage-store
     containerPort: 5432  
     persistence:
-      size: 5Gi
+      size: 500Mi
 
   resources:
     requests:
-      memory: "256Mi"
+      memory: "128Mi"
       cpu: "100m"
     limits:
-      memory: "512Mi"
+      memory: "256Mi"
       cpu: "500m"
 
   ### Опишите необходимые переменные для развертывания PostgresQL в кластере Kubernetes
