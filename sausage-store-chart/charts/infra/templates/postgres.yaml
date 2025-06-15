@@ -1,6 +1,3 @@
-{{- if .Values.postgresql.enabled }}
-{{- $fullName := printf "postgresql" -}}
-
 # -----------------------------------
 # ConfigMap (для настроек PostgreSQL)
 # -----------------------------------
@@ -83,7 +80,8 @@ spec:
               mountPath: /etc/postgresql/pg_hba.conf
               subPath: pg_hba.conf
           resources:
-{{ toYaml .Values.postgresql.resources | indent 10 }}
+            requests:
+              storage: {{ .Values.infra.postgresql.persistence.size | default "5Gi" | quote }}
       volumes:
         - name: config
           configMap:
@@ -117,6 +115,3 @@ spec:
   clusterIP: None
   selector:
     app: {{ $fullName }}
-
-{{- end }}
-
