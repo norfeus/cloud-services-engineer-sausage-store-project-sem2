@@ -124,7 +124,6 @@ infra:
     containerPort: 5432  
     persistence:
       size: 500Mi
-
     resources:
       requests:
         cpu: 300m
@@ -132,6 +131,7 @@ infra:
       limits:
         cpu: 500m
         memory: 500Mi
+    
 
   ### Опишите необходимые переменные для развертывания PostgresQL в кластере Kubernetes
   mongodb:
@@ -139,6 +139,8 @@ infra:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: rootpassword
     containerPort: 27017
+    persistence:
+      size: 500Mi
     resources:
       requests:
         cpu: 50m
