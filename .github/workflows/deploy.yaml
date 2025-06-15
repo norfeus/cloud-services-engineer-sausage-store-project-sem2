@@ -164,9 +164,6 @@ jobs:
 
         - name: Deploy to Kubernetes
           run: |
-            echo "${{ secrets.KUBE_CONFIG }}" > kubeconfig.yaml
-            export KUBECONFIG=kubeconfig.yaml
-            chmod 600 kubeconfig.yaml
             kubectl config get-contexts
             helm repo update
             echo "Listing available charts in repository..."
@@ -193,7 +190,11 @@ jobs:
               --wait \
               --timeout 2m0s
           env:
-            KUBECONFIG: $(pwd)/kubeconfig.yaml
+            KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+
+
+
+
 
         - name: Check rollout status of deployments
           run: |
