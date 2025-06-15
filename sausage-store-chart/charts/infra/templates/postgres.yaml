@@ -6,7 +6,7 @@ metadata:
   name: postgres-conf
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: postgres
+    app.kubernetes.io/name: postgresql
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
@@ -24,10 +24,10 @@ data:
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres-service
+  name: postgresql-service
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: postgres
+    app.kubernetes.io/name: postgresql
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
@@ -40,7 +40,7 @@ spec:
     - port: {{ .Values.postgresql.port }}
       targetPort: {{ .Values.postgresql.port }}
   selector:
-    app: postgres
+    app: postgresql
   clusterIP: None
 
 ---
@@ -48,12 +48,12 @@ spec:
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: postgres
+  name: postgresql
   namespace: {{ .Release.Namespace }}
   annotations:
     helm.sh/hook-weight: "-5"
   labels:
-    app.kubernetes.io/name: postgres
+    app.kubernetes.io/name: postgresql
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/version: {{ .Chart.AppVersion }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
@@ -66,12 +66,12 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: postgres
+      app: postgresql
   template:
     metadata:
       labels:
-        app: postgres
-        app.kubernetes.io/name: postgres
+        app: postgresql
+        app.kubernetes.io/name: postgresql
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       initContainers:
@@ -79,7 +79,7 @@ spec:
           image: busybox
           command: ["sh", "-c", "chown -R 999:999 /var/lib/postgresql/data && rm -rf /var/lib/postgresql/data/lost+found"]
           volumeMounts:
-            - name: postgres-data
+            - name: postgresql-data
               mountPath: /var/lib/postgresql/data
           resources:
             requests:
@@ -89,11 +89,11 @@ spec:
               cpu: "100m"
               memory: "128Mi"
       containers:
-        - name: postgres
+        - name: postgresql
           image: {{ .Values.postgresql.image }}
           envFrom:
             - configMapRef:
-                name: postgres-conf
+                name: postgresql-conf
           env:
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
@@ -107,11 +107,11 @@ spec:
               cpu: {{ .Values.postgresql.resources.limits.cpu }}
               memory: {{ .Values.postgresql.resources.limits.memory }}
           volumeMounts:
-            - name: postgres-data
+            - name: postgresql-data
               mountPath: /var/lib/postgresql/data
   volumeClaimTemplates:
     - metadata:
-        name: postgres-data
+        name: postgresql-data
       spec:
         accessModes: [ "ReadWriteOnce" ]
         resources:
