@@ -94,6 +94,9 @@ spec:
                 path: postgresql.conf
               - key: pg_hba.conf
                 path: pg_hba.conf
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ $fullName }}-pvc
 
 # -----------------------------------
 # Headless Service (для StatefulSet)
