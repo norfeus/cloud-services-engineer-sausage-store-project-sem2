@@ -184,6 +184,7 @@ jobs:
         - name: Upgrade or Install Helm release
           run: |
             export HELM_DRIVER=configmap
+            helm repo update
             helm upgrade --install sausage-store nexus/sausage-store \
               --namespace "${{ env.SAUSAGE_STORE_NAMESPACE }}" \
               --set global.vault.vaultToken="${{ env.VAULT_TOKEN }}" \
@@ -191,6 +192,8 @@ jobs:
               --set global.vault.host=vault.example.com \
               --wait \
               --timeout 2m0s
+          env:
+            KUBECONFIG: $(pwd)/kubeconfig.yaml
 
         - name: Check rollout status of deployments
           run: |
