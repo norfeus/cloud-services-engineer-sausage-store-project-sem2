@@ -1,11 +1,15 @@
+---
 apiVersion: v1
-kind: ConfigMap
+kind: Service
 metadata:
-  name: backend-report-config
-  namespace: {{ .Release.Namespace }}
+  name: "{{ .Release.Name }}-{{ .Chart.Name }}-service"
   labels:
-    app.kubernetes.io/name: backend-report
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    app: "{{ .Release.Name }}-{{ .Chart.Name }}"
 spec:
-  data:
-    PORT: "{{ .Values.backendReport.configMap.PORT }}"
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.service.port | default 8080 }}
+      protocol: TCP
+      targetPort: {{ .Values.containerPort | default 8080 }}
+  selector:
+    app: "{{ .Release.Name }}-{{ .Chart.Name }}"
