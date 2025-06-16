@@ -33,13 +33,13 @@ spec:
             - name: PORT
               valueFrom:
                 configMapKeyRef:
-                  name: {{ .Release.Name }}-{{ .Chart.Name }}-conf
+                  name: "{{ .Release.Name }}-{{ .Chart.Name }}-conf"
                   key: PORT
             - name: DB
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-{{ .Chart.Name }}-secret
-                  key: env
+                  name: "{{ .Release.Name }}-{{ .Chart.Name }}-secret"
+                  key: DB
           resources:
 {{ toYaml .Values.resources | indent 12 }} 
           ports:
@@ -56,18 +56,11 @@ spec:
               path: PORT
 ---
 apiVersion: v1
-kind: Secret
-metadata:
-  name: {{ .Release.Name }}-{{ .Chart.Name }}-secret
-data:
-  env: bW9uZ29kYjovL3Jvb3Q6cm9vdHBhc3N3b3JkQHNhdXNhZ2Utc3RvcmUtbW9uZ29kYjoyNzAxNy9yZXBvcnRzP2F1dGhTb3VyY2U9YWRtaW4=
----
-apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-{{ .Chart.Name }}-conf
+  name: "{{ .Release.Name }}-{{ .Chart.Name }}-conf"
 data:
-  PORT: "8080"
+  PORT: "{{ .Values.config.port }}"
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler

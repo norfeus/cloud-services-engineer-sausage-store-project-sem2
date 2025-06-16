@@ -95,6 +95,14 @@ backend-report:
     type: Recreate
   service:
     port: 8080
+  config:
+    port: 8080
+  secret:
+    dbport: 27017
+    dbhost: mongodb
+    dbname: sausage-store
+    dbuser: reports
+    dbpassword: reportspassword
   livenessProbe:
     httpGet:
       path: /api/v1/health
