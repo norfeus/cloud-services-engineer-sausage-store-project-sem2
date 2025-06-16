@@ -157,4 +157,7 @@ infra:
       reportsUsername: "{{ .Values.secrets.mongodb.reportsUsername }}"
       reportsPassword: "{{ .Values.secrets.mongodb.reportsPassword }}"
     containerPort: 27017
-
+    persistence:
+      enabled: true
+      storageClass: ""
+      size: 1Gi
