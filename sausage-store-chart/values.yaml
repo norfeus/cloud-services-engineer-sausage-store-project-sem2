@@ -117,7 +117,7 @@ backend-report:
 infra:
   postgresql:
     enabled: true
-    image: postgres:15
+    image: postgres:14
     port: 5432
     database: sausage-store
     username: store
