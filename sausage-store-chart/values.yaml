@@ -80,35 +80,31 @@ backend:
 
 
 backend-report:
-  enabled: true
+  image_tag: latest
+  revisionHistoryLimit: 15
   replicas: 1
-  strategy:
-    type: Recreate
-  image: norff/sausage-backend-report:latest
   containerPort: 8080
-  configMap:
-    PORT: "8080"
-
-  secret:
-    dbport: 27017
-    dbhost: mongodb
-    dbname: sausage-store
-    dbuser: reports
-    dbpassword: reportspassword
-
   resources:
     requests:
-      memory: "128Mi"
+      memory: "256Mi"
       cpu: "100m"
     limits:
-      memory: "256Mi"
-      cpu: "500m"
-
+      memory: "512Mi"
+      cpu: "250m"
+  strategy:
+    type: Recreate
+  service:
+    port: 8080
+  livenessProbe:
+    httpGet:
+      path: /api/v1/health
+      port: 8080
+    initialDelaySeconds: 15
+    periodSeconds: 10
   hpa:
-    enabled: true
     minReplicas: 1
     maxReplicas: 5
-    targetCPUUtilizationPercentage: 75
+    averageUtilization: 75
 
 ### Опишите значения для backend-report
 ### Приложение должно использовать стратегию Recreate

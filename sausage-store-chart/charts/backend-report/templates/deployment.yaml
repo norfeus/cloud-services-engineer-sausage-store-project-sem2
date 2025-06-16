@@ -1,41 +1,89 @@
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend-report-{{ .Release.Name }}
+  name: {{ .Release.Name }}-{{ .Chart.Name }}
   namespace: {{ .Release.Namespace }}
   labels:
-    app.kubernetes.io/name: backend-report
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/component: backend-report
-    app.kubernetes.io/part-of: sausage-store
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: "{{ .Release.Name }}"
+    app.kubernetes.io/version: "{{ .Chart.AppVersion }}"
+    app.kubernetes.io/managed-by: "{{ .Release.Service }}"
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    app.kubernetes.io/component: {{ .Chart.Name }}
+    app.kubernetes.io/part-of: {{ .Release.Name }}
 spec:
-  replicas: {{ .Values.backendReport.replicas }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  replicas: {{ .Values.replicas }}
   strategy:
-    type: Recreate
+{{ toYaml .Values.strategy | indent 4 }} 
   selector:
     matchLabels:
-      app: backend-report
+      app: {{ .Release.Name }}-{{ .Chart.Name }}
   template:
     metadata:
       labels:
-        app: backend-report
+        app: {{ .Release.Name }}-{{ .Chart.Name }}
     spec:
       containers:
-        - name: backend-report
-          image: {{ .Values.image }}
-          imagePullPolicy: {{ .Values.imagePullPolicy }}
-
-          ports:
-            - containerPort: {{ .Values.containerPort }}
-          envFrom:
-            - configMapRef:
-                name: backend-report-config
-            - secretRef:
-                name: backend-report-secrets
+        - name: {{ .Chart.Name }}
+          image: norff/sausage-backend-report:{{ .Values.image_tag }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          env:
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-{{ .Chart.Name }}-conf
+                  key: PORT
+            - name: DB
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-{{ .Chart.Name }}-secret
+                  key: env
           resources:
-            requests:
-              memory: {{ .Values.resources.requests.memory }}
-              cpu: {{ .Values.resources.requests.cpu }}
-            limits:
-              memory: {{ .Values.resources.limits.memory }}
-              cpu: {{ .Values.resources.limits.cpu }}
+{{ toYaml .Values.resources | indent 12 }} 
+          ports:
+            - name: {{ .Chart.Name }}
+              containerPort: {{ .Values.containerPort }}
+          livenessProbe:
+{{ toYaml .Values.livenessProbe | indent 12 }} 
+      volumes:
+      - name: {{ .Release.Name }}-{{ .Chart.Name }}-conf
+        configMap:
+          name: {{ .Release.Name }}-{{ .Chart.Name }}-conf
+          items:
+            - key: PORT
+              path: PORT
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-{{ .Chart.Name }}-secret
+data:
+  env: bW9uZ29kYjovL3Jvb3Q6cm9vdHBhc3N3b3JkQHNhdXNhZ2Utc3RvcmUtbW9uZ29kYjoyNzAxNy9yZXBvcnRzP2F1dGhTb3VyY2U9YWRtaW4=
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-{{ .Chart.Name }}-conf
+data:
+  PORT: "8080"
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Release.Name }}-{{ .Chart.Name }}-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Release.Name }}-{{ .Chart.Name }}
+  minReplicas: {{ .Values.hpa.minReplicas }}
+  maxReplicas: {{ .Values.hpa.maxReplicas }}
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: {{ .Values.hpa.averageUtilization }}
