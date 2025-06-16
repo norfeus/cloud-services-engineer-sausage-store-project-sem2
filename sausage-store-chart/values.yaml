@@ -86,8 +86,6 @@ backend-report:
     type: Recreate
   image: norff/sausage-backend-report:latest
   containerPort: 8080
-  service:
-    port: 8080
   config:
     port: 8080
   configMap:
