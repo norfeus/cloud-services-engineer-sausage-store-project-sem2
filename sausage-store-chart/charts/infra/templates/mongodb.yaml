@@ -48,6 +48,7 @@ spec:
       name: mongodb-data
     spec:
       accessModes: [ "ReadWriteOnce" ]
+      storageClass: standard
       resources:
         requests:
           storage: 1Gi
