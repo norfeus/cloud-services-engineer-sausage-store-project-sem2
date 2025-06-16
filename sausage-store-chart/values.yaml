@@ -138,8 +138,9 @@ infra:
   ### Опишите необходимые переменные для развертывания PostgresQL в кластере Kubernetes
   mongodb:
     env:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+      MONGO_INITDB_ROOT_USERNAME: reports
+      MONGO_INITDB_ROOT_PASSWORD: reportspassword
+      MONGO_INITDB_DATABASE: sausage-store
     containerPort: 27017
     persistence:
       size: "5Gi"
