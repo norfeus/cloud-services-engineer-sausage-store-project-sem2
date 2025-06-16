@@ -20,13 +20,21 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 ######## Start a new stage from scratch #######
 FROM alpine:latest  
 
-WORKDIR /root
+RUN apk add --no-cache ca-certificates && update-ca-certificates
+RUN addgroup -g 1001 -S grp && adduser -u 1001 -S usr -G srvgrp
 
-# Copy the Pre-built binary file from the previous stage
+WORKDIR /app
+
 COPY --from=builder /app/main .
 
-# Expose port 8080 to the outside world
+USER usr
 EXPOSE 8080
 
-# Command to run the executable
-CMD ["./main"] 
+HEALTHCHECK \
+  --interval=30s \
+  --timeout=5s \
+  --start-period=10s \
+  --retries=3 \
+  CMD wget -q --spider http://localhost:8080/api/v1/health || exit 1
+
+CMD ["./main"]
