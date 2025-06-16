@@ -157,13 +157,4 @@ infra:
       reportsUsername: "{{ .Values.secrets.mongodb.reportsUsername }}"
       reportsPassword: "{{ .Values.secrets.mongodb.reportsPassword }}"
     containerPort: 27017
-    resources:
-      requests:
-        memory: "128Mi"
-        cpu: "50m"
-      limits:
-        memory: "256Mi"
-        cpu: "500m"
-    storage:
-      size: 1Gi
-      storageClassName: local-path
+

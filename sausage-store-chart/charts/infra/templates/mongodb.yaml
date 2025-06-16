@@ -34,7 +34,12 @@ spec:
         ports:
         - containerPort: {{ .Values.mongodb.containerPort }}
         resources:
-{{ toYaml .Values.mongodb.resources | indent 10 }}
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
         volumeMounts:
         - name: mongodb-data
           mountPath: /data/db
@@ -43,10 +48,9 @@ spec:
       name: mongodb-data
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: {{ .Values.mongodb.storage.storageClassName }}
       resources:
         requests:
-          storage: {{ .Values.mongodb.storage.size }}
+          storage: 1Gi
 ---
 apiVersion: v1
 kind: Service
