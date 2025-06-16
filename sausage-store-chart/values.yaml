@@ -85,10 +85,10 @@ backend-report:
   containerPort: 8080
   resources:
     requests:
-      memory: "256Mi"
+      memory: "128Mi"
       cpu: "100m"
     limits:
-      memory: "512Mi"
+      memory: "256Mi"
       cpu: "250m"
   strategy:
     type: Recreate
@@ -152,9 +152,9 @@ infra:
       MONGO_INITDB_DATABASE: reports
     resources:
       requests:
-        memory: "256Mi"
+        memory: "128Mi"
         cpu: "100m"
       limits:
-        memory: "512Mi"
-        cpu: "500m"
+        memory: "256Mi"
+        cpu: "200m"
     containerPort: 27017
