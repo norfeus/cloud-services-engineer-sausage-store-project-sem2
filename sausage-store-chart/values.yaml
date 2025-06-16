@@ -6,7 +6,12 @@ global:
   #  vaultToken: someToken
   # secret:
   #   DB_URI: mongodb://root:rootpassword@sausage-store-mongodb:27017/reports?authSource=admin
-
+secrets:
+  mongodb:
+    rootUsername: root
+    rootPassword: rootpassword
+    reportsUsername: reports
+    reportsPassword: reportspassword
 
 frontend:
 ### В чарте frontend отсутствуют некоторые важные файлы. Поймите какие и опишите их.
@@ -142,20 +147,23 @@ infra:
     
 
   ### Опишите необходимые переменные для развертывания PostgresQL в кластере Kubernetes
-  mongodb:
+    mongodb:
+    image: mongo:7.0
     env:
       MONGO_INITDB_DATABASE: sausage-store
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: rootpassword
-      MONGO_INITDB_USERNAME: reports
-      MONGO_INITDB_PASSWORD: reportspassword
+    auth:
+      rootUsername: "{{ .Values.secrets.mongodb.rootUsername }}"
+      rootPassword: "{{ .Values.secrets.mongodb.rootPassword }}"
+      reportsUsername: "{{ .Values.secrets.mongodb.reportsUsername }}"
+      reportsPassword: "{{ .Values.secrets.mongodb.reportsPassword }}"
     containerPort: 27017
-    persistence:
-      size: "5Gi"
     resources:
       requests:
-        cpu: 50m
-        memory: 128Mi
+        memory: "128Mi"
+        cpu: "50m"
       limits:
-        cpu: 300m
-        memory: 256Mi
+        memory: "256Mi"
+        cpu: "500m"
+    storage:
+      size: 1Gi
+      storageClassName: local-path

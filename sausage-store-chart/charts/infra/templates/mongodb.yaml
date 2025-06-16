@@ -18,24 +18,35 @@ spec:
       containers:
       - name: mongodb
         image: mongo:7.0
-        envFrom:
-          - configMapRef:
-              name: mongodb-conf
+        env:
+          - name: MONGO_INITDB_DATABASE
+            value: "sausage-store"
+          - name: MONGO_INITDB_ROOT_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: db-credentials
+                key: mongo-root-username
+          - name: MONGO_INITDB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: db-credentials
+                key: mongo-root-password
         ports:
         - containerPort: {{ .Values.mongodb.containerPort }}
+        resources:
+{{ toYaml .Values.mongodb.resources | indent 10 }}
         volumeMounts:
         - name: mongodb-data
           mountPath: /data/db
-        resources:
-{{ toYaml .Values.mongodb.resources | indent 10 }}
   volumeClaimTemplates:
   - metadata:
       name: mongodb-data
     spec:
       accessModes: [ "ReadWriteOnce" ]
+      storageClassName: {{ .Values.mongodb.storage.storageClassName }}
       resources:
         requests:
-          storage: 1Gi
+          storage: {{ .Values.mongodb.storage.size }}
 ---
 apiVersion: v1
 kind: Service
@@ -50,12 +61,3 @@ spec:
   selector:
     app: mongodb
   clusterIP: None
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: mongodb-conf
-data:
-  MONGO_INITDB_ROOT_USERNAME: {{ .Values.mongodb.env.MONGO_INITDB_ROOT_USERNAME }}
-  MONGO_INITDB_ROOT_PASSWORD: {{ .Values.mongodb.env.MONGO_INITDB_ROOT_PASSWORD }}
-  MONGO_INITDB_DATABASE: {{ .Values.mongodb.env.MONGO_INITDB_DATABASE }}
