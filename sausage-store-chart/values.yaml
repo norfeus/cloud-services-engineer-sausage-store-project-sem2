@@ -1,9 +1,9 @@
 global:
   imagePullPolicy: Always
-  vault:
-   host: ip
-   name: vault
-   vaultToken: someToken
+  # vault:
+  #  host: ip
+  #  name: vault
+  #  vaultToken: someToken
   secret:
     DB_URI: mongodb://root:rootpassword@sausage-store-mongodb:27017/reports?authSource=admin
 
