@@ -8,8 +8,8 @@ global:
   #   DB_URI: mongodb://root:rootpassword@sausage-store-mongodb:27017/reports?authSource=admin
 secrets:
   mongodb:
-    rootUsername: root
-    rootPassword: rootpassword
+    rootUsername: reports
+    rootPassword: reportspassword
     reportsUsername: reports
     reportsPassword: reportspassword
 
