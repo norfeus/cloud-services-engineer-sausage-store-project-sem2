@@ -24,7 +24,7 @@ data:
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgresql-service
+  name: postgresql
   namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: postgresql
@@ -62,7 +62,7 @@ metadata:
     app.kubernetes.io/part-of: sausage-store
     env: {{ .Values.environment | default "production" }}
 spec:
-  serviceName: postgres-service
+  serviceName: postgresql
   replicas: 1
   selector:
     matchLabels:
