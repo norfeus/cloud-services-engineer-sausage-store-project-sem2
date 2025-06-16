@@ -49,7 +49,7 @@ spec:
     spec:
       containers:
         - name: mongodb
-          image: mongo:latest
+          image: mongo:7.0
           ports:
             - name: mongodb
               containerPort: {{ .Values.mongodb.containerPort }}

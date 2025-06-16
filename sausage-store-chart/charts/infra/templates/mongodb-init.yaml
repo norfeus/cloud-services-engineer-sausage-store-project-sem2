@@ -12,7 +12,8 @@ metadata:
     app.kubernetes.io/part-of: sausage-store
   annotations:
     "helm.sh/hook": post-install
-    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-weight": "10"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   template:
     metadata:
@@ -22,27 +23,35 @@ spec:
     spec:
       containers:
         - name: mongodb-init
-          image: mongo:latest
+          image: mongo:7.0
           command:
-            - mongosh
-            - --host
-            - mongodb
-            - --port
-            - "27017"
-            - -u
-            - "{{ .Values.mongodb.env.MONGO_INITDB_ROOT_USERNAME }}"
-            - -p
-            - "{{ .Values.mongodb.env.MONGO_INITDB_ROOT_PASSWORD }}"
-            - --authenticationDatabase
-            - admin
-            - --eval
+            - sh
+            - -c
             - |
-              db = db.getSiblingDB('reports');
-              db.createUser({
-                user: 'reports_user',
-                pwd: 'reports_password',
-                roles: [
-                  { role: 'readWrite', db: 'reports' }
-                ]
-              });
-      restartPolicy: OnFailure 
+              until mongosh --host mongodb --port 27017 \
+                -u {{ .Values.mongodb.env.MONGO_INITDB_ROOT_USERNAME }} \
+                -p {{ .Values.mongodb.env.MONGO_INITDB_ROOT_PASSWORD }} \
+                --authenticationDatabase admin \
+                --eval 'db.adminCommand("ping")'; do
+                echo "Waiting for MongoDB to be ready...";
+                sleep 5;
+              done;
+
+              mongosh --host mongodb --port 27017 \
+                -u {{ .Values.mongodb.env.MONGO_INITDB_ROOT_USERNAME }} \
+                -p {{ .Values.mongodb.env.MONGO_INITDB_ROOT_PASSWORD }} \
+                --authenticationDatabase admin \
+                --eval '
+                db = db.getSiblingDB("reports");
+                if (!db.getUser("reports_user")) {
+                  db.createUser({
+                    user: "reports_user",
+                    pwd: "reports_password",
+                    roles: [
+                      { role: "readWrite", db: "reports" }
+                    ]
+                  });
+                } else {
+                  print("User reports_user already exists.");
+                }'
+      restartPolicy: OnFailure
