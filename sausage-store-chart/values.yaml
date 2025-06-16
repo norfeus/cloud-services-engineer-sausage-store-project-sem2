@@ -147,7 +147,7 @@ infra:
     
 
   ### Опишите необходимые переменные для развертывания PostgresQL в кластере Kubernetes
-    mongodb:
+  mongodb:
     image: mongo:7.0
     env:
       MONGO_INITDB_DATABASE: sausage-store
