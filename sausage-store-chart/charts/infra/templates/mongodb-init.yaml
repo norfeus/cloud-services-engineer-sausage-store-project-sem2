@@ -2,6 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: mongodb-init
+  namespace: {{ .Release.Namespace }}
   labels:
     app.kubernetes.io/name: mongodb-init
     app.kubernetes.io/instance: "{{ .Release.Name }}"
