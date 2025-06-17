@@ -83,6 +83,8 @@ backend-report:
   revisionHistoryLimit: 15
   replicas: 1
   containerPort: 8080
+  env:
+    db: mongodb://store:storepassword@mongodb:27017/sausage-store
   resources:
     requests:
       memory: "128Mi"
