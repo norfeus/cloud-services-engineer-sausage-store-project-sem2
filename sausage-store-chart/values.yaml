@@ -1,14 +1,7 @@
 global:
   imagePullPolicy: Always
-  # vault:
-  #  host: ip
-  #  name: vault
-  #  vaultToken: someToken
-  # secret:
-  #   DB_URI: mongodb://root:rootpassword@sausage-store-mongodb:27017/reports?authSource=admin
 
 frontend:
-### В чарте frontend отсутствуют некоторые важные файлы. Поймите какие и опишите их.
   replicas: 1
   revisionHistoryLimit: 15
   strategy:
@@ -98,12 +91,6 @@ backend-report:
     port: 8080
   config:
     port: 8080
-  secret:
-    dbport: 27017
-    dbhost: mongodb
-    dbname: sausage-store
-    dbuser: reports
-    dbpassword: reportspassword
   livenessProbe:
     httpGet:
       path: /api/v1/health
@@ -114,12 +101,6 @@ backend-report:
     minReplicas: 1
     maxReplicas: 5
     averageUtilization: 75
-
-### Опишите значения для backend-report
-### Приложение должно использовать стратегию Recreate
-### Приложение использует переменную PORT - порт, на котором оно запустится и DB - Uri-подключение к mongodb. 
-### DB положите в Secret, PORT в ConfigMap
-### Опишите HPA для backend-report
 
 infra:
   postgresql:
@@ -140,9 +121,7 @@ infra:
       enabled: true
       storageClass: ""
       size: 2Gi
-    
 
-  ### Опишите необходимые переменные для развертывания PostgresQL в кластере Kubernetes
   mongodb:
     enabled: true
     persistence:
