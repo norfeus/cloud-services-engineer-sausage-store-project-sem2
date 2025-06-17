@@ -3,7 +3,13 @@ kind: Job
 metadata:
   name: {{ .Release.Name }}-mongodb-init
   namespace: {{ .Release.Namespace }}
-  labels: {{- include "mongodb.labels" . | nindent 4 }}
+  labels: 
+    app.kubernetes.io/instance: "{{ .Release.Name }}"
+    app.kubernetes.io/version: "{{ .Chart.AppVersion }}"
+    app.kubernetes.io/managed-by: "{{ .Release.Service }}"
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    app.kubernetes.io/component: infra
+    app.kubernetes.io/part-of: sausage-store
 spec:
   template:
     metadata:
