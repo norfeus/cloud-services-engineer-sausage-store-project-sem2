@@ -50,16 +50,16 @@ spec:
                 -p {{ .Values.mongodb.env.MONGO_INITDB_ROOT_PASSWORD }} \
                 --authenticationDatabase admin \
                 --eval '
-                db = db.getSiblingDB("reports");
-                if (!db.getUser("reportsuser")) {
+                db = db.getSiblingDB("sausage-store");
+                if (!db.getUser("store")) {
                   db.createUser({
-                    user: "reportsuser",
-                    pwd: "reportspassword",
+                    user: "store",
+                    pwd: "storepassword",
                     roles: [
-                      { role: "readWrite", db: "reports" }
+                      { role: "readWrite", db: "sausage-store" }
                     ]
                   });
                 } else {
-                  print("User reportsuser already exists.");
+                  print("User store already exists.");
                 }'
       restartPolicy: OnFailure
